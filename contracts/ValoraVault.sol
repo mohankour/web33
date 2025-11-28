@@ -1,34 +1,14 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
-
-/**
- * @title ValoraVault
- * @dev A secure vault smart contract for depositing and withdrawing Ether
- * @notice This contract implements time-locked deposits with fee management
- */
-contract ValoraVault {
-    
-    // State variables
+State variables
     address payable public owner;
     uint256 public feePercent;
     uint256 public lockDuration;
     uint256 public totalDeposits;
-    bool private locked; // Reentrancy guard
-    
-    // Mappings
+    bool private locked; Mappings
     mapping(address => uint256) public balances;
     mapping(address => uint256) public depositTimestamps;
     mapping(address => uint256) public totalUserDeposits;
     
-    // Events
-    event Deposit(address indexed user, uint256 amount, uint256 fee, uint256 timestamp);
-    event Withdrawal(address indexed user, uint256 amount, uint256 timestamp);
-    event FeeUpdated(uint256 oldFee, uint256 newFee);
-    event LockDurationUpdated(uint256 oldDuration, uint256 newDuration);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    event EmergencyWithdrawal(address indexed owner, uint256 amount);
-    
-    // Modifiers
+    Modifiers
     modifier onlyOwner() {
         require(msg.sender == owner, "ValoraVault: Caller is not the owner");
         _;
@@ -51,8 +31,7 @@ contract ValoraVault {
      */
     constructor() {
         owner = payable(msg.sender);
-        feePercent = 2; // 2% default fee
-        lockDuration = 7 days; // 7 days default lock period
+        feePercent = 2; 7 days default lock period
         locked = false;
     }
     
@@ -66,11 +45,7 @@ contract ValoraVault {
         
         require(depositAmount > 0, "ValoraVault: Deposit amount too small");
         
-        // Transfer fee to owner
-        (bool feeSuccess, ) = owner.call{value: fee}("");
-        require(feeSuccess, "ValoraVault: Fee transfer failed");
-        
-        // Update state (checks-effects-interactions pattern)
+        Update state (checks-effects-interactions pattern)
         balances[msg.sender] += depositAmount;
         depositTimestamps[msg.sender] = block.timestamp;
         totalUserDeposits[msg.sender] += depositAmount;
@@ -90,11 +65,7 @@ contract ValoraVault {
             "ValoraVault: Funds are still locked"
         );
         
-        // Update state before transfer (checks-effects-interactions pattern)
-        balances[msg.sender] = 0;
-        totalDeposits -= balance;
-        
-        // Transfer funds
+        Transfer funds
         (bool success, ) = payable(msg.sender).call{value: balance}("");
         require(success, "ValoraVault: Withdrawal transfer failed");
         
@@ -114,11 +85,7 @@ contract ValoraVault {
             "ValoraVault: Funds are still locked"
         );
         
-        // Update state before transfer
-        balances[msg.sender] -= amount;
-        totalDeposits -= amount;
-        
-        // Transfer funds
+        Transfer funds
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         require(success, "ValoraVault: Partial withdrawal failed");
         
@@ -227,3 +194,6 @@ contract ValoraVault {
         revert("ValoraVault: Use deposit() function to deposit funds");
     }
 }
+// 
+Contract End
+// 
